@@ -123,12 +123,12 @@ def analyze_incident_route(
             detail="Incident not found",
         )
 
-    analysis = analyze_incident(
+    result = analyze_incident(
         title=incident.title,
         description=incident.description,
     )
 
     return {
         "incident_id": incident.id,
-        "analysis": analysis
+        **result
     }

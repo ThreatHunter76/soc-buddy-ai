@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
 
+    # OpenAI API key is optional so the backend can still start
+    # when OpenAI credits are exhausted or the key is not configured.
+    OPENAI_API_KEY: str | None = None
+
     model_config = SettingsConfigDict(
         env_file=".env",
         extra="ignore"
