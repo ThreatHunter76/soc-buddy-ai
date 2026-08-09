@@ -174,7 +174,7 @@ Coming soon after frontend development.
 
 # 👨‍💻 Author
 
-**AbdulQudus AbdulHakeem**
+**AbdulQudus Olamilekan AbdulHakeem**
 
 GitHub:
 https://github.com/ThreatHunter76
