@@ -1,23 +1,24 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const API_URL = "http://127.0.0.1:8000/api/v1";
 
 export default function CreateIncidentPage() {
+  const router = useRouter();
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [severity, setSeverity] = useState("Medium");
   const [status, setStatus] = useState("Open");
 
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     setLoading(true);
-    setMessage("");
 
     try {
       const response = await fetch(`${API_URL}/incidents/`, {
@@ -37,17 +38,15 @@ export default function CreateIncidentPage() {
         throw new Error("Failed to create incident");
       }
 
-      await response.json();
+      // Go back to dashboard after successful creation
+      router.push("/");
 
-      setMessage("✅ Incident created successfully!");
+      // Refresh dashboard data
+      router.refresh();
 
-      setTitle("");
-      setDescription("");
-      setSeverity("Medium");
-      setStatus("Open");
     } catch (error) {
       console.error(error);
-      setMessage("❌ Failed to create incident.");
+      alert("Failed to create incident.");
     } finally {
       setLoading(false);
     }
@@ -74,11 +73,10 @@ export default function CreateIncidentPage() {
 
           <input
             type="text"
+            required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            required
             className="w-full border rounded-lg p-3"
-            placeholder="Example: Multiple Failed Logins"
           />
         </div>
 
@@ -88,12 +86,11 @@ export default function CreateIncidentPage() {
           </label>
 
           <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
             required
             rows={5}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
             className="w-full border rounded-lg p-3"
-            placeholder="Describe the incident..."
           />
         </div>
 
@@ -133,16 +130,10 @@ export default function CreateIncidentPage() {
         <button
           type="submit"
           disabled={loading}
-          className="bg-black text-white px-6 py-3 rounded-lg disabled:opacity-50"
+          className="bg-black text-white px-6 py-3 rounded-lg"
         >
           {loading ? "Creating..." : "Create Incident"}
         </button>
-
-        {message && (
-          <div className="border rounded-lg p-4">
-            {message}
-          </div>
-        )}
       </form>
     </main>
   );

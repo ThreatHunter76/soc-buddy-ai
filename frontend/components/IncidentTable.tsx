@@ -16,56 +16,162 @@ interface IncidentTableProps {
 export default function IncidentTable({
   incidents,
 }: IncidentTableProps) {
-  return (
-    <div className="bg-slate-900 rounded-xl shadow-lg p-6">
-      <h2 className="text-xl font-bold mb-4 text-white">Incidents</h2>
 
-      <table className="w-full text-left">
-        <thead>
-          <tr className="border-b border-slate-700 text-slate-400">
-            <th className="p-3">ID</th>
-            <th className="p-3">Title</th>
-            <th className="p-3">Severity</th>
-            <th className="p-3">Status</th>
+  function severityColor(severity: string) {
+    switch (severity.toLowerCase()) {
+      case "critical":
+        return "bg-red-700 text-white";
+
+      case "high":
+        return "bg-red-500 text-white";
+
+      case "medium":
+        return "bg-yellow-500 text-black";
+
+      case "low":
+        return "bg-green-500 text-black";
+
+      default:
+        return "bg-slate-600 text-white";
+    }
+  }
+
+  function statusColor(status: string) {
+    switch (status.toLowerCase()) {
+      case "open":
+        return "bg-red-500 text-white";
+
+      case "in progress":
+        return "bg-yellow-500 text-black";
+
+      case "resolved":
+        return "bg-green-500 text-black";
+
+      default:
+        return "bg-slate-600 text-white";
+    }
+  }
+
+  return (
+    <div className="rounded-2xl border border-slate-700 bg-slate-900 shadow-xl overflow-hidden">
+
+      <div className="flex items-center justify-between px-6 py-5 border-b border-slate-700">
+
+        <h2 className="text-2xl font-bold text-cyan-400">
+          Security Incidents
+        </h2>
+
+        <span className="text-slate-400">
+          {incidents.length} Incident(s)
+        </span>
+
+      </div>
+
+      <table className="w-full">
+
+        <thead className="bg-slate-800">
+
+          <tr>
+
+            <th className="p-4 text-left text-slate-300">
+              ID
+            </th>
+
+            <th className="p-4 text-left text-slate-300">
+              Incident
+            </th>
+
+            <th className="p-4 text-left text-slate-300">
+              Severity
+            </th>
+
+            <th className="p-4 text-left text-slate-300">
+              Status
+            </th>
+
+            <th className="p-4 text-center text-slate-300">
+              Action
+            </th>
+
           </tr>
+
         </thead>
 
         <tbody>
+
           {incidents.map((incident) => (
+
             <tr
               key={incident.id}
-              className="border-b border-slate-800 hover:bg-slate-800 transition"
+              className="border-b border-slate-800 hover:bg-slate-800 transition duration-200"
             >
-              <td className="p-3">
-                <Link
-                  href={`/incidents/${incident.id}`}
-                  className="text-blue-400 hover:underline"
-                >
-                  {incident.id}
-                </Link>
+
+              <td className="p-4 font-bold text-cyan-400">
+                #{incident.id}
               </td>
 
-              <td className="p-3">{incident.title}</td>
+              <td className="p-4">
 
-              <td className="p-3">
+                <div>
+
+                  <p className="font-semibold">
+                    {incident.title}
+                  </p>
+
+                  <p className="text-sm text-slate-400 truncate max-w-md">
+                    {incident.description}
+                  </p>
+
+                </div>
+
+              </td>
+
+              <td className="p-4">
+
                 <span
-                  className={`px-2 py-1 rounded text-sm ${
-                    incident.severity.toLowerCase() === "high"
-                      ? "bg-red-600"
-                      : incident.severity.toLowerCase() === "medium"
-                      ? "bg-yellow-600"
-                      : "bg-green-600"
-                  }`}
+                  className={`px-3 py-1 rounded-full text-xs font-bold ${severityColor(
+                    incident.severity
+                  )}`}
                 >
-                  {incident.severity}
+                  {incident.severity.toUpperCase()}
                 </span>
+
               </td>
 
-              <td className="p-3">{incident.status}</td>
+              <td className="p-4">
+
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-bold ${statusColor(
+                    incident.status
+                  )}`}
+                >
+                  {incident.status.toUpperCase()}
+                </span>
+
+              </td>
+
+              <td className="p-4 text-center">
+
+                <Link href={`/incidents/${incident.id}`}>
+
+                  <button className="bg-cyan-500 hover:bg-cyan-600 text-black font-bold px-4 py-2 rounded-lg transition">
+
+                    👁 View
+
+                  </button>
+
+                </Link>
+
+              </td>
+
             </tr>
+
           ))}
+
         </tbody>
+
       </table>
+
     </div>
   );
 }
