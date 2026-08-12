@@ -170,6 +170,99 @@ Coming soon after frontend development.
 - ⏳ Incident Timeline
 - ⏳ SOC Dashboard
 
+# 🛡️ SOC Buddy AI
+
+SOC Buddy AI is an AI-powered Security Operations Center (SOC) platform built to help security analysts monitor, investigate, and analyze cybersecurity incidents from a modern web dashboard.
+
+## 🚀 Features
+
+- 🔐 Secure Login Authentication (JWT)
+- 📊 Interactive SOC Dashboard
+- 🤖 AI Incident Analysis
+- 📁 Incident Management
+- 📈 Security Analytics
+- 🔎 Search & Filters
+- 📋 Activity Feed
+- 📤 Log Upload Module
+- 🛡️ FastAPI Backend
+- ⚡ Next.js Frontend
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+
+- Next.js 15
+- React
+- TypeScript
+- Tailwind CSS
+
+### Backend
+
+- FastAPI
+- SQLAlchemy
+- PostgreSQL
+- JWT Authentication
+- OpenAI Integration
+
+---
+
+## Project Structure
+
+```
+frontend/
+backend/
+```
+
+---
+
+## Installation
+
+### Backend
+
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+---
+
+## Current Version
+
+Version 0.1.0
+
+---
+
+## Future Roadmap
+
+- AI Log Analysis
+- SIEM Integration
+- Splunk Integration
+- Microsoft Sentinel Integration
+- Wazuh Integration
+- Threat Intelligence
+- MITRE ATT&CK Mapping
+- IOC Extraction
+- PDF Report Export
+- Multi-user Support
+
+---
+
+## Author
+
+**AbdulQudus AbdulHakeem**
+
+SOC Analyst | AI Security Engineer | Threat Hunter
 ---
 
 # 👨‍💻 Author

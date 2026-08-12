@@ -5,7 +5,7 @@ from app.api.v1.routes.health import router as health_router
 from app.api.v1.routes.users import router as users_router
 from app.api.v1.routes.auth import router as auth_router
 from app.api.v1.routes.incidents import router as incidents_router
-
+from app.api.v1.routes.upload import router as upload_router
 
 app = FastAPI(
     title="SOC Buddy AI API",
@@ -14,6 +14,7 @@ app = FastAPI(
 )
 
 # Allow the frontend to communicate with the backend
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -46,6 +47,10 @@ app.include_router(
     prefix="/api/v1"
 )
 
+app.include_router(
+    upload_router,
+    prefix="/api/v1"
+)
 
 @app.get("/")
 def root():

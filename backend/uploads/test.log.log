@@ -1,0 +1,4 @@
+2026-08-12 12:45:01 INFO User login successful
+2026-08-12 12:46:17 WARNING Failed login attempt from 192.168.1.15
+2026-08-12 12:47:08 ERROR PowerShell execution detected
+2026-08-12 12:47:55 ALERT Multiple failed logins detected

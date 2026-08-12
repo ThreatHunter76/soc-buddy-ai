@@ -4,24 +4,52 @@ import { useState } from "react";
 
 export default function UploadLogsPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [message, setMessage] = useState("");
 
   function handleFileChange(
     e: React.ChangeEvent<HTMLInputElement>
   ) {
     if (e.target.files && e.target.files.length > 0) {
       setSelectedFile(e.target.files[0]);
+      setMessage("");
     }
   }
 
-  function handleUpload() {
+  async function handleUpload() {
     if (!selectedFile) {
       alert("Please select a log file first.");
       return;
     }
 
-    alert(
-      `Selected file: ${selectedFile.name}\n\nBackend upload will be connected next.`
-    );
+    try {
+      setUploading(true);
+      setMessage("");
+
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/v1/upload/",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+
+      const data = await response.json();
+
+      setMessage(`✅ ${data.message}`);
+    } catch (error) {
+      console.error(error);
+      setMessage("❌ Upload failed.");
+    } finally {
+      setUploading(false);
+    }
   }
 
   return (
@@ -74,10 +102,19 @@ export default function UploadLogsPage() {
 
             <button
               onClick={handleUpload}
-              className="bg-cyan-500 hover:bg-cyan-600 text-black font-bold px-8 py-3 rounded-lg transition"
+              disabled={uploading}
+              className="bg-cyan-500 hover:bg-cyan-600 disabled:opacity-50 text-black font-bold px-8 py-3 rounded-lg transition"
             >
-              🚀 Upload & Analyze
+              {uploading
+                ? "Uploading..."
+                : "🚀 Upload & Analyze"}
             </button>
+
+            {message && (
+              <div className="mt-6 text-lg font-semibold">
+                {message}
+              </div>
+            )}
 
           </div>
 
