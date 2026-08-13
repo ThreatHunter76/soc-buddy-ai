@@ -273,7 +273,7 @@ GitHub:
 https://github.com/ThreatHunter76
 
 LinkedIn:
-(Coming Soon)
+www.linkedin.com/in/abdulqudus-abdulhakeem-8ab3a934
 
 ---
 
