@@ -6,14 +6,21 @@ from app.api.v1.routes.users import router as users_router
 from app.api.v1.routes.auth import router as auth_router
 from app.api.v1.routes.incidents import router as incidents_router
 from app.api.v1.routes.upload import router as upload_router
+from app.api.v1.routes.password_reset import (
+    router as password_reset_router,
+)
+
 
 app = FastAPI(
     title="SOC Buddy AI API",
     version="1.0.0",
-    description="AI-powered Security Operations Center Copilot"
+    description="AI-powered Security Operations Center Copilot",
 )
 
-# Allow the frontend to communicate with the backend
+
+# ============================================================
+# CORS CONFIGURATION
+# ============================================================
 
 app.add_middleware(
     CORSMiddleware,
@@ -26,34 +33,62 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+# ============================================================
+# API ROUTES
+# ============================================================
+
+# Health
 app.include_router(
     health_router,
     prefix="/api/v1",
-    tags=["Health"]
+    tags=["Health"],
 )
 
+
+# Users
 app.include_router(
     users_router,
-    prefix="/api/v1"
+    prefix="/api/v1",
 )
 
+
+# Authentication / Login
 app.include_router(
     auth_router,
-    prefix="/api/v1"
+    prefix="/api/v1",
 )
 
+
+# Password Reset
+app.include_router(
+    password_reset_router,
+    prefix="/api/v1",
+)
+
+
+# Incidents
 app.include_router(
     incidents_router,
-    prefix="/api/v1"
+    prefix="/api/v1",
 )
 
+
+# Security Log Upload & AI Analysis
 app.include_router(
     upload_router,
-    prefix="/api/v1"
+    prefix="/api/v1",
 )
+
+
+# ============================================================
+# ROOT ENDPOINT
+# ============================================================
 
 @app.get("/")
 def root():
     return {
-        "message": "Welcome to SOC Buddy AI 🚀"
+        "message": "Welcome to SOC Buddy AI 🚀",
+        "status": "online",
+        "version": "1.0.0",
     }

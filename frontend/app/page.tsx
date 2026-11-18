@@ -1,190 +1,529 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import { useState } from "react";
 
-import Navbar from "@/components/Navbar";
-import StatCard from "@/components/StatCard";
-import IncidentTable from "@/components/IncidentTable";
-import Analytics from "@/components/Analytics/Analytics";
-import ActivityFeed from "@/components/ActivityFeed/ActivityFeed";
-import SearchBar from "@/components/SearchBar/SearchBar";
-import SeverityFilter from "@/components/SeverityFilter/SeverityFilter";
-import StatusFilter from "@/components/StatusFilter/StatusFilter";
-import { getIncidents } from "@/services/api";
+export default function UploadLogsPage() {
 
-type Incident = {
-  id: number;
-  title: string;
-  description: string;
-  severity: string;
-  status: string;
-};
+  const [file, setFile] = useState<File | null>(null);
 
-export default function Home() {
-  const [incidents, setIncidents] = useState<Incident[]>([]);
-  const [search, setSearch] = useState("");
-  const [severity, setSeverity] = useState("All");
-  const [status, setStatus] = useState("All");
+  const [uploading, setUploading] = useState(false);
 
-  useEffect(() => {
-    async function loadIncidents() {
-      try {
-        const data = await getIncidents();
-        setIncidents(data);
-      } catch (error) {
-        console.error(error);
-      }
+  const [message, setMessage] = useState("");
+
+  const [analysis, setAnalysis] = useState<any>(null);
+
+
+  async function handleUpload() {
+
+    if (!file) {
+      alert("Please select a log file.");
+      return;
     }
 
-    loadIncidents();
-  }, []);
 
-  const filteredIncidents = useMemo(() => {
-    return incidents.filter((incident) => {
-      const matchesSearch = incident.title
-        .toLowerCase()
-        .includes(search.toLowerCase());
+    try {
 
-      const matchesSeverity =
-        severity === "All" ||
-        incident.severity === severity;
+      setUploading(true);
 
-      const matchesStatus =
-        status === "All" ||
-        incident.status === status;
+      setMessage("");
 
-      return (
-        matchesSearch &&
-        matchesSeverity &&
-        matchesStatus
+      setAnalysis(null);
+
+
+      const formData = new FormData();
+
+      formData.append(
+        "file",
+        file
       );
-    });
-  }, [incidents, search, severity, status]);
+
+
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/v1/upload/",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+
+      const data = await response.json();
+
+
+      console.log(
+        "SOC BUDDY RESPONSE:",
+        data
+      );
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          data.detail || "Upload failed"
+        );
+
+      }
+
+
+      setMessage(
+        data.message
+      );
+
+
+      if (data.analysis) {
+
+        setAnalysis(
+          data.analysis
+        );
+
+      }
+      else {
+
+        setMessage(
+          "Upload completed but no AI analysis was returned."
+        );
+
+      }
+
+
+    }
+
+    catch(error) {
+
+      console.error(
+        error
+      );
+
+
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Upload failed"
+      );
+
+    }
+
+
+    finally {
+
+      setUploading(false);
+
+    }
+
+  }
+
+
 
   return (
-    <>
-      <Navbar />
 
-      <main className="max-w-7xl mx-auto p-8">
+    <main className="min-h-screen bg-slate-950 text-white p-10">
 
-        <h1 className="text-4xl font-bold text-cyan-400 mb-2">
-          SOC Dashboard
+      <div className="max-w-5xl mx-auto">
+
+
+        <h1 className="text-4xl font-bold text-cyan-400 mb-3">
+
+          🤖 SOC Buddy AI Log Investigation
+
         </h1>
 
+
         <p className="text-slate-400 mb-8">
-          Monitor, investigate and analyze security incidents.
+
+          Upload security logs and receive AI-powered SOC analysis.
+
         </p>
 
-        {/* STAT CARDS */}
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
 
-          <StatCard
-            title="Total Incidents"
-            value={incidents.length}
-          />
+        <div className="bg-slate-900 border border-cyan-700 rounded-xl p-8">
 
-          <StatCard
-            title="High Severity"
-            value={
-              incidents.filter(
-                (i) => i.severity === "High"
-              ).length
+
+          <input
+
+            type="file"
+
+            accept=".log,.txt,.csv,.json"
+
+            onChange={
+              (e)=>
+              setFile(
+                e.target.files?.[0] || null
+              )
             }
+
+            className="mb-5"
+
           />
 
-          <StatCard
-            title="Resolved Cases"
-            value={
-              incidents.filter(
-                (i) => i.status === "Resolved"
-              ).length
+
+
+          {file && (
+
+            <div className="bg-slate-800 p-4 rounded-lg">
+
+              <p className="text-cyan-400 font-bold">
+
+                Selected File
+
+              </p>
+
+
+              <p>
+
+                {file.name}
+
+              </p>
+
+
+              <p className="text-sm text-gray-400">
+
+                {(file.size / 1024).toFixed(2)} KB
+
+              </p>
+
+
+            </div>
+
+          )}
+
+
+
+
+          <button
+
+            onClick={handleUpload}
+
+            disabled={uploading}
+
+            className="mt-6 bg-cyan-500 text-black font-bold px-8 py-3 rounded-lg"
+
+          >
+
+            {
+
+              uploading
+
+              ?
+
+              "🤖 SOC Buddy AI Investigating..."
+
+              :
+
+              "🚀 Upload & Analyze"
+
             }
-          />
+
+
+          </button>
+
+
+
+
+          {message && (
+
+            <div className="mt-6 bg-green-900 border border-green-500 p-4 rounded-xl">
+
+              {message}
+
+            </div>
+
+          )}
+
+
+
+
+
+
+          {analysis && (
+
+            <div className="mt-10 space-y-6">
+
+
+
+              <h2 className="text-3xl font-bold text-cyan-400">
+
+                Investigation Report
+
+              </h2>
+
+
+
+
+
+              <section className="bg-slate-800 p-6 rounded-xl">
+
+                <h3 className="text-xl text-cyan-400 font-bold">
+
+                  Executive Summary
+
+                </h3>
+
+
+                <p className="mt-3">
+
+                  {analysis.executive_summary}
+
+                </p>
+
+
+              </section>
+
+
+
+
+
+
+              <section className="bg-slate-800 p-6 rounded-xl">
+
+
+                <h3 className="text-xl text-red-400 font-bold">
+
+                  Threat Summary
+
+                </h3>
+
+
+                <p className="mt-3">
+
+                  {analysis.threat_summary}
+
+                </p>
+
+
+              </section>
+
+
+
+
+
+
+
+              <div className="grid md:grid-cols-3 gap-5">
+
+
+                <div className="bg-slate-800 p-5 rounded-xl">
+
+                  <h3 className="text-yellow-400">
+
+                    Risk Level
+
+                  </h3>
+
+
+                  <p className="text-3xl font-bold">
+
+                    {analysis.risk_level}
+
+                  </p>
+
+
+                </div>
+
+
+
+
+                <div className="bg-slate-800 p-5 rounded-xl">
+
+                  <h3 className="text-cyan-400">
+
+                    Confidence
+
+                  </h3>
+
+
+                  <p className="text-3xl font-bold">
+
+                    {analysis.confidence}%
+
+                  </p>
+
+
+                </div>
+
+
+
+
+
+                <div className="bg-slate-800 p-5 rounded-xl">
+
+                  <h3 className="text-green-400">
+
+                    Chunks
+
+                  </h3>
+
+
+                  <p className="text-3xl font-bold">
+
+                    {analysis.chunks_analyzed}
+
+                  </p>
+
+
+                </div>
+
+
+              </div>
+
+
+
+
+
+
+
+
+              <section className="bg-slate-800 p-6 rounded-xl">
+
+                <h3 className="text-purple-400 text-xl font-bold">
+
+                  MITRE ATT&CK
+
+                </h3>
+
+
+                <pre className="mt-3 whitespace-pre-wrap">
+
+                  {JSON.stringify(
+                    analysis.mitre_attack,
+                    null,
+                    2
+                  )}
+
+                </pre>
+
+
+              </section>
+
+
+
+
+
+
+
+              <section className="bg-slate-800 p-6 rounded-xl">
+
+
+                <h3 className="text-orange-400 text-xl font-bold">
+
+                  Indicators of Compromise
+
+                </h3>
+
+
+                <pre className="mt-3 whitespace-pre-wrap">
+
+                  {JSON.stringify(
+                    analysis.iocs,
+                    null,
+                    2
+                  )}
+
+                </pre>
+
+
+              </section>
+
+
+
+
+
+
+
+              <section className="bg-slate-800 p-6 rounded-xl">
+
+
+                <h3 className="text-blue-400 text-xl font-bold">
+
+                  Evidence
+
+                </h3>
+
+
+                <pre className="mt-3 whitespace-pre-wrap">
+
+                  {JSON.stringify(
+                    analysis.evidence,
+                    null,
+                    2
+                  )}
+
+                </pre>
+
+
+              </section>
+
+
+
+
+
+
+              <section className="bg-slate-800 p-6 rounded-xl">
+
+
+                <h3 className="text-green-400 text-xl font-bold">
+
+                  Recommended Actions
+
+                </h3>
+
+
+                <pre className="mt-3 whitespace-pre-wrap">
+
+                  {JSON.stringify(
+                    analysis.recommended_actions,
+                    null,
+                    2
+                  )}
+
+                </pre>
+
+
+              </section>
+
+
+
+
+
+
+
+              <section className="bg-slate-800 p-6 rounded-xl">
+
+
+                <h3 className="text-gray-300 text-xl font-bold">
+
+                  Analyst Notes
+
+                </h3>
+
+
+                <p className="mt-3">
+
+                  {analysis.analyst_notes}
+
+                </p>
+
+
+              </section>
+
+
+
+
+
+            </div>
+
+          )}
+
+
 
         </div>
 
-        {/* ANALYTICS + ACTIVITY */}
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-10">
+      </div>
 
-          <div className="xl:col-span-2">
-            <Analytics incidents={incidents} />
-          </div>
 
-          <ActivityFeed incidents={incidents} />
+    </main>
 
-        </div>
-
-        {/* SEARCH */}
-
-        <SearchBar
-          value={search}
-          onChange={setSearch}
-        />
-
-        {/* FILTERS */}
-
-        <div className="mt-6">
-
-          <h2 className="font-semibold mb-3">
-            Filter by Severity
-          </h2>
-
-          <SeverityFilter
-            value={severity}
-            onChange={setSeverity}
-          />
-
-        </div>
-
-        <div className="mt-6 mb-8">
-
-          <h2 className="font-semibold mb-3">
-            Filter by Status
-          </h2>
-
-          <StatusFilter
-            value={status}
-            onChange={setStatus}
-          />
-
-        </div>
-
-        {/* ACTION BUTTONS */}
-
-        <div className="flex flex-wrap justify-between gap-4 mb-8">
-
-          <Link href="/create-incident">
-
-            <button className="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-lg transition">
-
-              ➕ Create Incident
-
-            </button>
-
-          </Link>
-
-          <Link href="/incidents/1">
-
-            <button className="bg-cyan-500 hover:bg-cyan-600 text-black font-bold px-6 py-3 rounded-lg transition">
-
-              🤖 Analyze Incident
-
-            </button>
-
-          </Link>
-
-        </div>
-
-        {/* INCIDENT TABLE */}
-
-        <IncidentTable
-          incidents={filteredIncidents}
-        />
-
-      </main>
-    </>
   );
+
 }
