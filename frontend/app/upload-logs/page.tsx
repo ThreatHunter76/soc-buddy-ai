@@ -8,19 +8,36 @@ type MitreTechnique = {
   reason?: string;
 };
 
-type IOC = {
-  type?: string;
-  value?: string;
-  reason?: string;
-};
+
 
 type Analysis = {
+  executive_summary?: string;
+
   threat_summary?: string;
+
   risk_level?: string;
+
   confidence?: number;
+
+
   mitre_attack?: MitreTechnique[];
-  iocs?: IOC[];
+
+
+  indicators?: {
+    ips?: string[];
+    internal_ips?: string[];
+    domains?: string[];
+    hashes?: string[];
+  };
+
+
+  evidence?: string[];
+
+
   recommended_actions?: string[];
+
+
+  analyst_notes?: string;
 };
 
 export default function UploadLogsPage() {
@@ -410,7 +427,75 @@ export default function UploadLogsPage() {
               )}
 
             </div>
+            {/* EVIDENCE */}
 
+            <div className="bg-slate-900 border border-blue-500 rounded-2xl p-7">
+
+              <h3 className="text-2xl font-bold text-blue-400 mb-5">
+                📝 Evidence
+              </h3>
+
+{analysis.evidence &&
+ analysis.evidence.length > 0 ? (
+
+  <ul className="list-disc ml-6 space-y-3">
+
+    {analysis.evidence.map(
+      (item: any, index: number) => (
+
+        <li
+          key={index}
+          className="text-slate-200"
+        >
+
+          {typeof item === "string" ? (
+
+            item
+
+          ) : (
+
+            <div className="space-y-1">
+
+              <p>
+                <strong>Source IP:</strong> {item.source_ip}
+              </p>
+
+              <p>
+                <strong>Destination IP:</strong> {item.destination_ip}
+              </p>
+
+              <p>
+                <strong>Destination Port:</strong> {item.destination_port}
+              </p>
+
+              <p>
+                <strong>Protocol:</strong> {item.protocol}
+              </p>
+
+              <p>
+                <strong>Bytes:</strong> {item.bytes}
+              </p>
+
+            </div>
+
+          )}
+
+        </li>
+
+      )
+    )}
+
+  </ul>
+
+) : (
+
+  <p className="text-slate-400">
+    No evidence found.
+  </p>
+
+)}
+
+            </div>
 
             {/* IOCs */}
 
@@ -420,53 +505,118 @@ export default function UploadLogsPage() {
                 🔎 Indicators of Compromise
               </h3>
 
-              {analysis.iocs &&
-              analysis.iocs.length > 0 ? (
+             {analysis.indicators &&
+(
+  (analysis.indicators.ips?.length ?? 0) > 0 ||
+  (analysis.indicators.internal_ips?.length ?? 0) > 0 ||
+  (analysis.indicators.domains?.length ?? 0) > 0 ||
+  (analysis.indicators.hashes?.length ?? 0) > 0
+) ? (
 
-                <div className="space-y-4">
+  <div className="space-y-4">
 
-                  {analysis.iocs.map(
-                    (ioc, index) => (
 
-                      <div
-                        key={index}
-                        className="bg-slate-800 border border-orange-700 rounded-xl p-5"
-                      >
+    {analysis.indicators.ips?.map(
+      (ip, index) => (
 
-                        <div className="flex flex-wrap gap-3 items-center">
+        <div
+          key={`ip-${index}`}
+          className="bg-slate-800 border border-orange-700 rounded-xl p-5"
+        >
 
-                          <span className="bg-orange-600 text-white px-3 py-1 rounded-lg font-bold">
-                            {ioc.type || "Indicator"}
-                          </span>
+          <span className="bg-orange-600 text-white px-3 py-1 rounded-lg font-bold">
+            IP Address
+          </span>
 
-                          <span className="text-orange-300 font-mono">
-                            {ioc.value || "Unknown"}
-                          </span>
+          <span className="text-orange-300 font-mono ml-3">
+            {ip}
+          </span>
 
-                        </div>
+        </div>
 
-                        {ioc.reason && (
+      )
+    )}
 
-                          <p className="text-slate-300 mt-3 leading-7">
-                            {ioc.reason}
-                          </p>
 
-                        )}
 
-                      </div>
+    {analysis.indicators.internal_ips?.map(
+      (ip, index) => (
 
-                    )
-                  )}
+        <div
+          key={`internal-${index}`}
+          className="bg-slate-800 border border-orange-700 rounded-xl p-5"
+        >
 
-                </div>
+          <span className="bg-orange-600 text-white px-3 py-1 rounded-lg font-bold">
+            Internal IP
+          </span>
 
-              ) : (
+          <span className="text-orange-300 font-mono ml-3">
+            {ip}
+          </span>
 
-                <p className="text-slate-400">
-                  No indicators of compromise were identified.
-                </p>
+        </div>
 
-              )}
+      )
+    )}
+
+
+
+    {analysis.indicators.domains?.map(
+      (domain, index) => (
+
+        <div
+          key={`domain-${index}`}
+          className="bg-slate-800 border border-orange-700 rounded-xl p-5"
+        >
+
+          <span className="bg-orange-600 text-white px-3 py-1 rounded-lg font-bold">
+            Domain
+          </span>
+
+          <span className="text-orange-300 font-mono ml-3">
+            {domain}
+          </span>
+
+        </div>
+
+      )
+    )}
+
+
+
+    {analysis.indicators.hashes?.map(
+      (hash, index) => (
+
+        <div
+          key={`hash-${index}`}
+          className="bg-slate-800 border border-orange-700 rounded-xl p-5"
+        >
+
+          <span className="bg-orange-600 text-white px-3 py-1 rounded-lg font-bold">
+            Hash
+          </span>
+
+          <span className="text-orange-300 font-mono ml-3">
+            {hash}
+          </span>
+
+        </div>
+
+      )
+    )}
+
+  </div>
+
+) : (
+
+  <p className="text-slate-400">
+    No indicators of compromise were identified.
+  </p>
+
+)}
+
+              
 
             </div>
 

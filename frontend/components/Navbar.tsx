@@ -22,7 +22,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto flex items-center justify-between">
 
         <Link
-          href="/"
+          href="/dashboard"
           className="text-2xl font-bold text-cyan-400"
         >
           🛡️ SOC Buddy AI
@@ -31,10 +31,17 @@ export default function Navbar() {
         <div className="flex items-center gap-6">
 
           <Link
-            href="/"
+              href="/dashboard"
             className="text-slate-300 hover:text-cyan-400"
           >
             Dashboard
+          </Link>
+
+           <Link
+             href="/upload-logs"
+           className="text-slate-300 hover:text-cyan-400"
+          >
+            Upload Logs
           </Link>
 
           <Link
