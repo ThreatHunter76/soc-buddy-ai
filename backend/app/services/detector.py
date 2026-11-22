@@ -10,11 +10,13 @@ def detect_events(parsed_log):
     processes = [
         p.lower()
         for p in parsed_log.get("processes", [])
+        if p
     ]
 
     commands = [
         c.lower()
         for c in parsed_log.get("commands", [])
+        if c
     ]
 
     ips = parsed_log.get("ips", [])
@@ -23,6 +25,53 @@ def detect_events(parsed_log):
         "raw_log",
         ""
     ).lower()
+
+
+    # ==========================
+    # Wazuh Native Detection
+    # ==========================
+
+    wazuh_rule = parsed_log.get(
+        "wazuh_rule",
+        {}
+    )
+
+    if wazuh_rule:
+
+        rule_description = wazuh_rule.get(
+            "description",
+            ""
+        )
+
+        rule_level = wazuh_rule.get(
+            "level",
+            0
+        )
+
+        rule_id = wazuh_rule.get(
+            "id"
+        )
+
+        detections.append({
+
+            "name": rule_description,
+
+            "category": "Wazuh Alert",
+
+            "description":
+                f"Wazuh detected: {rule_description}",
+
+            "severity":
+                "HIGH" if rule_level >= 10
+                else "MEDIUM" if rule_level >= 5
+                else "LOW",
+
+            "wazuh_rule_id": rule_id,
+
+            "wazuh_level": rule_level
+
+        })
+
 
     # ==========================
     # Authentication Detection
@@ -36,11 +85,13 @@ def detect_events(parsed_log):
 
             "category": "Authentication",
 
-            "description": "A failed authentication attempt was detected.",
+            "description":
+                "A failed authentication attempt was detected.",
 
             "severity": "LOW"
 
         })
+
 
     if "4624" in event_ids:
 
@@ -50,34 +101,123 @@ def detect_events(parsed_log):
 
             "category": "Authentication",
 
-            "description": "A successful user authentication was detected.",
+            "description":
+                "A successful user authentication was detected.",
 
             "severity": "INFO"
 
         })
 
+
+    if "4688" in event_ids:
+
+        trusted_processes = [
+
+            "splunkd.exe",
+            "splunk-optimize.exe",
+            "svchost.exe",
+            "explorer.exe",
+            "services.exe"
+
+        ]
+
+        suspicious_processes = [
+
+            "powershell.exe",
+            "cmd.exe",
+            "mimikatz.exe",
+            "certutil.exe",
+            "rundll32.exe",
+            "psexec.exe"
+
+        ]
+
+
+        process_text = " ".join(
+            process.split("\\")[-1]
+            for process in processes
+        ).lower()
+
+
+        if any(
+            process in process_text
+            for process in suspicious_processes
+        ):
+
+            detections.append({
+
+                "name": "Suspicious Process Creation",
+
+                "category": "Execution",
+
+                "description":
+                "A potentially suspicious process was created.",
+
+                "severity": "MEDIUM"
+
+            })
+
+
+        elif any(
+            process in process_text
+            for process in trusted_processes
+        ):
+
+            detections.append({
+
+                "name": "Known Legitimate Process Creation",
+
+                "category": "Execution",
+
+                "description":
+                "A trusted system or application process was created.",
+
+                "severity": "INFO"
+
+            })
+
+
+        else:
+
+            detections.append({
+
+                "name": "Process Creation",
+
+                "category": "Execution",
+
+                "description":
+                "Windows Event ID 4688 indicates a new process was created.",
+
+                "severity": "LOW"
+
+            })
     if "multiple failed logins" in raw_log:
 
         detections.append({
 
-            "name": "Multiple Failed Login Attempts",
+            "name":
+                "Multiple Failed Login Attempts",
 
-            "category": "Authentication",
+            "category":
+                "Authentication",
 
-            "description": "Multiple failed authentication attempts were detected.",
+            "description":
+                "Multiple failed authentication attempts were detected.",
 
-            "severity": "MEDIUM"
+            "severity":
+                "MEDIUM"
 
         })
+
 
     # ==========================
     # PowerShell Detection
     # ==========================
 
     if any(
-        "powershell" in process
-        for process in processes
-    ):
+    process.endswith("powershell.exe")
+    for process in processes
+):
 
         detections.append({
 
@@ -85,11 +225,13 @@ def detect_events(parsed_log):
 
             "category": "Execution",
 
-            "description": "PowerShell execution was detected.",
+            "description":
+                "PowerShell execution was detected.",
 
             "severity": "MEDIUM"
 
         })
+
 
     for command in commands:
 
@@ -97,15 +239,20 @@ def detect_events(parsed_log):
 
             detections.append({
 
-                "name": "Encoded PowerShell Command",
+                "name":
+                    "Encoded PowerShell Command",
 
-                "category": "Defense Evasion",
+                "category":
+                    "Defense Evasion",
 
-                "description": "Encoded PowerShell command detected.",
+                "description":
+                    "Encoded PowerShell command detected.",
 
-                "severity": "HIGH"
+                "severity":
+                    "HIGH"
 
             })
+
 
     # ==========================
     # Command Execution
@@ -120,46 +267,53 @@ def detect_events(parsed_log):
 
     ]
 
+
     for process in suspicious_processes:
 
         if process in processes:
 
             detections.append({
 
-                "name": f"{process} Execution",
+                "name":
+                    f"{process} Execution",
 
-                "category": "Execution",
+                "category":
+                    "Execution",
 
-                "description": f"{process} execution detected.",
+                "description":
+                    f"{process} execution detected.",
 
-                "severity": "MEDIUM"
+                "severity":
+                    "MEDIUM"
 
             })
 
-        # ==========================
+
+    # ==========================
     # Firewall / Network Detection
     # ==========================
 
     action = (
-    parsed_log.get("action")
-    or ""
-).lower()
+        parsed_log.get("action")
+        or ""
+    ).lower()
+
 
     destination_port = parsed_log.get(
         "destination_port"
     )
 
+
     protocol = (
-    parsed_log.get("protocol")
-    or ""
-).lower()
+        parsed_log.get("protocol")
+        or ""
+    ).lower()
+
 
     bytes_sent = parsed_log.get(
         "bytes"
     )
 
-
-    # Blocked firewall traffic
 
     if action in [
         "deny",
@@ -169,24 +323,27 @@ def detect_events(parsed_log):
 
         detections.append({
 
-            "name": "Firewall Blocked Connection",
+            "name":
+                "Firewall Blocked Connection",
 
-            "category": "Network Security",
+            "category":
+                "Network Security",
 
             "description":
-            "Firewall blocked a network connection.",
+                "Firewall blocked a network connection.",
 
-            "severity": "MEDIUM"
+            "severity":
+                "MEDIUM"
 
         })
 
 
-    # Suspicious outbound communication
-
     external_ports = [
+
         "4444",
         "8080",
         "8443",
+
     ]
 
 
@@ -195,21 +352,19 @@ def detect_events(parsed_log):
         detections.append({
 
             "name":
-            "Suspicious Network Communication",
+                "Suspicious Network Communication",
 
             "category":
-            "Command and Control",
+                "Command and Control",
 
             "description":
-            f"Outbound communication detected on port {destination_port}.",
+                f"Outbound communication detected on port {destination_port}.",
 
             "severity":
-            "MEDIUM"
+                "MEDIUM"
 
         })
 
-
-    # Large data transfer
 
     try:
 
@@ -218,16 +373,16 @@ def detect_events(parsed_log):
             detections.append({
 
                 "name":
-                "Large Outbound Data Transfer",
+                    "Large Outbound Data Transfer",
 
                 "category":
-                "Exfiltration",
+                    "Exfiltration",
 
                 "description":
-                "Large volume of outbound network traffic detected.",
+                    "Large volume of outbound network traffic detected.",
 
                 "severity":
-                "HIGH"
+                    "HIGH"
 
             })
 
@@ -235,8 +390,6 @@ def detect_events(parsed_log):
 
         pass
 
-
-    # Known scanning indicators
 
     if any(keyword in raw_log for keyword in [
 
@@ -250,16 +403,16 @@ def detect_events(parsed_log):
         detections.append({
 
             "name":
-            "Network Scanning Activity",
+                "Network Scanning Activity",
 
             "category":
-            "Discovery",
+                "Discovery",
 
             "description":
-            "Possible network scanning activity detected.",
+                "Possible network scanning activity detected.",
 
             "severity":
-            "MEDIUM"
+                "MEDIUM"
 
         })
 
@@ -274,23 +427,29 @@ def detect_events(parsed_log):
 
     ]
 
+
     for keyword in dos_keywords:
 
         if keyword in raw_log:
 
             detections.append({
 
-                "name": "Possible Denial of Service Activity",
+                "name":
+                    "Possible Denial of Service Activity",
 
-                "category": "Impact",
+                "category":
+                    "Impact",
 
-                "description": "Possible network disruption activity detected.",
+                "description":
+                    "Possible network disruption activity detected.",
 
-                "severity": "HIGH"
+                "severity":
+                    "HIGH"
 
             })
 
             break
+
 
     outbound_keywords = [
 
@@ -301,23 +460,29 @@ def detect_events(parsed_log):
 
     ]
 
+
     for keyword in outbound_keywords:
 
         if keyword in raw_log:
 
             detections.append({
 
-                "name": "Suspicious Outbound Communication",
+                "name":
+                    "Suspicious Outbound Communication",
 
-                "category": "Command and Control",
+                "category":
+                    "Command and Control",
 
-                "description": "Suspicious outbound network communication detected.",
+                "description":
+                    "Suspicious outbound network communication detected.",
 
-                "severity": "HIGH"
+                "severity":
+                    "HIGH"
 
             })
 
             break
+
 
     # ==========================
     # Network Activity Observation
@@ -327,25 +492,34 @@ def detect_events(parsed_log):
 
         detections.append({
 
-            "name": "Network Connection Observed",
+            "name":
+                "Network Connection Observed",
 
-"category": "Network Activity",
+            "category":
+                "Network Activity",
 
-"description":
-f"Connection from {parsed_log.get('source_ip')} to {parsed_log.get('destination_ip')} over {protocol.upper()}.",
+            "description":
+                f"Connection from {parsed_log.get('source_ip')} to {parsed_log.get('destination_ip')} over {protocol.upper()}.",
 
-"severity": "INFO",
+            "severity":
+                "INFO",
 
-"source_ip": parsed_log.get("source_ip"),
+            "source_ip":
+                parsed_log.get("source_ip"),
 
-"destination_ip": parsed_log.get("destination_ip"),
+            "destination_ip":
+                parsed_log.get("destination_ip"),
 
-"destination_port": parsed_log.get("destination_port"),
+            "destination_port":
+                parsed_log.get("destination_port"),
 
-"protocol": protocol,
+            "protocol":
+                protocol,
 
-"bytes": parsed_log.get("bytes")
+            "bytes":
+                parsed_log.get("bytes")
 
-})
+        })
+
 
     return detections

@@ -179,7 +179,129 @@ def parse_firewall_log(log_text):
 
     }
 
+def parse_wazuh_alert(alert):
 
+    rule = alert.get("rule", {})
+    agent = alert.get("agent", {})
+    data = alert.get("data", {})
+
+    eventdata = (
+        data
+        .get("win", {})
+        .get("eventdata", {})
+    )
+
+    system = (
+        data
+        .get("win", {})
+        .get("system", {})
+    )
+
+
+    processes = []
+
+    commands = []
+
+    users = []
+
+
+    # Extract process names
+
+    new_process = eventdata.get(
+        "newProcessName"
+    )
+
+    parent_process = eventdata.get(
+        "parentProcessName"
+    )
+
+
+    if new_process:
+        processes.append(
+            new_process
+        )
+
+
+    if parent_process:
+        processes.append(
+            parent_process
+        )
+
+
+    # Extract command line
+
+    command_line = eventdata.get(
+        "commandLine"
+    )
+
+
+    if command_line:
+        commands.append(
+            command_line
+        )
+
+
+    # Extract username
+
+    username = eventdata.get(
+        "subjectUserName"
+    )
+
+
+    if username:
+        users.append(
+            username
+        )
+
+
+    return {
+
+        "log_type": "wazuh",
+
+        "event_ids": [
+            system.get("eventID")
+        ] if system.get("eventID") else [],
+
+
+        "ips": [
+            agent.get("ip")
+        ] if agent.get("ip") else [],
+
+
+        "source_ip": None,
+
+        "destination_ip": None,
+
+        "source_port": None,
+
+        "destination_port": None,
+
+        "protocol": None,
+
+        "action": None,
+
+
+        "severity": rule.get("level"),
+
+
+        "users": users,
+
+
+        "processes": processes,
+
+
+        "commands": commands,
+
+
+        "wazuh_rule": rule,
+
+
+        "wazuh_agent": agent,
+
+
+        "raw_log": str(alert)
+
+    }
 
 def parse_log(log_text):
 

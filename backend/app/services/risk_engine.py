@@ -20,7 +20,16 @@ def calculate_risk(detections, iocs, mitre_results):
     }
 
 
+    seen = set()
+
     for detection in detections:
+
+        name = detection.get("name")
+
+        if name in seen:
+            continue
+
+        seen.add(name)
 
         severity = detection.get(
             "severity",
@@ -31,7 +40,6 @@ def calculate_risk(detections, iocs, mitre_results):
             severity,
             0
         )
-
 
 
     # IOC scoring

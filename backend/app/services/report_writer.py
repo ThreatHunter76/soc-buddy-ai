@@ -11,16 +11,49 @@ def generate_report(
     # Executive Summary
     # ==========================
 
-    detection_names = [
+    security_detections = [
+
         d.get("name")
+
         for d in detections
+
+        if d.get("severity") != "INFO"
+
     ]
 
+
+    informational_observations = [
+
+        d.get("name")
+
+        for d in detections
+
+        if d.get("severity") == "INFO"
+
+    ]
+
+
+    detection_names = security_detections.copy()
+
+
     report["executive_summary"] = (
+
         "Security analysis identified: "
-        + ", ".join(detection_names)
+
+        + ", ".join(security_detections)
+
+        if security_detections
+
+        else "No security threats were identified."
+
     )
 
+
+    if informational_observations:
+
+        report["informational_observations"] = (
+            informational_observations
+        )
 
     # ==========================
     # Threat Summary
