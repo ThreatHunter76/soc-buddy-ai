@@ -345,23 +345,7 @@ export default function UploadLogsPage() {
 
 
 
-                <div className="bg-slate-800 p-5 rounded-xl">
-
-                  <h3 className="text-green-400">
-
-                    Chunks
-
-                  </h3>
-
-
-                  <p className="text-3xl font-bold">
-
-                    {analysis.chunks_analyzed}
-
-                  </p>
-
-
-                </div>
+                
 
 
               </div>
@@ -382,15 +366,34 @@ export default function UploadLogsPage() {
                 </h3>
 
 
-                <pre className="mt-3 whitespace-pre-wrap">
+                <div className="mt-3 space-y-3">
 
-                  {JSON.stringify(
-                    analysis.mitre_attack,
-                    null,
-                    2
-                  )}
+  {analysis.mitre_attack?.map(
+    (item: any, index: number) => (
 
-                </pre>
+      <div
+        key={index}
+        className="bg-slate-700 p-4 rounded-lg"
+      >
+
+        <p>
+          <span className="font-bold">
+            {item.technique}
+          </span>
+          {" - "}
+          {item.name}
+        </p>
+
+        <p className="text-slate-300 mt-2">
+          Tactic: {item.tactic}
+        </p>
+
+      </div>
+
+    )
+  )}
+
+</div>
 
 
               </section>
@@ -411,15 +414,59 @@ export default function UploadLogsPage() {
                 </h3>
 
 
-                <pre className="mt-3 whitespace-pre-wrap">
+                <div className="mt-3">
 
-                  {JSON.stringify(
-                    analysis.iocs,
-                    null,
-                    2
-                  )}
+  <p>
+    <strong>IP Addresses:</strong>
+  </p>
 
-                </pre>
+  <ul className="list-disc ml-6">
+    {analysis.indicators?.ips?.map(
+      (ip: string, index: number) => (
+        <li key={index}>{ip}</li>
+      )
+    )}
+
+    {analysis.indicators?.internal_ips?.map(
+      (ip: string, index: number) => (
+        <li key={index}>{ip}</li>
+      )
+    )}
+  </ul>
+
+
+  <br />
+
+
+  <p>
+    <strong>Domains:</strong>
+  </p>
+
+  <ul className="list-disc ml-6">
+    {analysis.indicators?.domains?.map(
+      (domain: string, index: number) => (
+        <li key={index}>{domain}</li>
+      )
+    )}
+  </ul>
+
+
+  <br />
+
+
+  <p>
+    <strong>Hashes:</strong>
+  </p>
+
+  <ul className="list-disc ml-6">
+    {analysis.indicators?.hashes?.map(
+      (hash: string, index: number) => (
+        <li key={index}>{hash}</li>
+      )
+    )}
+  </ul>
+
+</div>
 
 
               </section>
@@ -440,15 +487,51 @@ export default function UploadLogsPage() {
                 </h3>
 
 
-                <pre className="mt-3 whitespace-pre-wrap">
+               <ul className="mt-3 list-disc ml-5">
 
-                  {JSON.stringify(
-                    analysis.evidence,
-                    null,
-                    2
-                  )}
+  {analysis.evidence?.map(
+  (item: any, index: number) => (
 
-                </pre>
+    <li key={index}>
+
+      {typeof item === "string" ? (
+
+        item
+
+      ) : (
+
+        <div className="space-y-1">
+
+          <p>
+            <strong>Source IP:</strong> {item.source_ip}
+          </p>
+
+          <p>
+            <strong>Destination IP:</strong> {item.destination_ip}
+          </p>
+
+          <p>
+            <strong>Destination Port:</strong> {item.destination_port}
+          </p>
+
+          <p>
+            <strong>Protocol:</strong> {item.protocol}
+          </p>
+
+          <p>
+            <strong>Bytes:</strong> {item.bytes}
+          </p>
+
+        </div>
+
+      )}
+
+    </li>
+
+  )
+)}
+
+</ul>
 
 
               </section>
@@ -467,18 +550,52 @@ export default function UploadLogsPage() {
 
                 </h3>
 
+<ul className="mt-3 list-disc ml-5">
 
-                <pre className="mt-3 whitespace-pre-wrap">
+  {analysis.evidence?.map(
+    (item: any, index: number) => (
 
-                  {JSON.stringify(
-                    analysis.recommended_actions,
-                    null,
-                    2
-                  )}
+      <li key={index}>
 
-                </pre>
+        {typeof item === "string" ? (
 
+          item
 
+        ) : (
+
+          <div className="space-y-1">
+
+            <p>
+              <strong>Source IP:</strong> {item.source_ip}
+            </p>
+
+            <p>
+              <strong>Destination IP:</strong> {item.destination_ip}
+            </p>
+
+            <p>
+              <strong>Destination Port:</strong> {item.destination_port}
+            </p>
+
+            <p>
+              <strong>Protocol:</strong> {item.protocol}
+            </p>
+
+            <p>
+              <strong>Bytes:</strong> {item.bytes}
+            </p>
+
+          </div>
+
+        )}
+
+      </li>
+
+    )
+  )}
+
+</ul>
+                
               </section>
 
 

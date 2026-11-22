@@ -56,7 +56,7 @@ export default function LoginForm() {
 
       document.cookie = `access_token=${data.access_token}; path=/`;
 
-      window.location.href = "/";
+      window.location.href = "/dashboard";
     } catch (err) {
       console.error(err);
       setError("Invalid email or password.");
